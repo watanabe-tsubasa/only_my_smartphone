@@ -47,7 +47,8 @@ video {
   bottom: 0;
   left: 0;
   right: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 12px;
   align-items: center;
   padding: 16px;
@@ -58,6 +59,54 @@ video {
   flex: 1;
   margin: 0;
   font-size: 14px;
+}
+
+.threshold-control {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.threshold-labels {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+.threshold-title {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.threshold-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.threshold-inputs {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 10px;
+  align-items: center;
+}
+
+.threshold-inputs input[type='range'] {
+  width: 100%;
+}
+
+.threshold-inputs input[type='number'] {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
 }
 
 #toggle-motion {
