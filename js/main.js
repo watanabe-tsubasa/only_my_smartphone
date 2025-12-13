@@ -182,8 +182,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   toggleButton?.addEventListener('click', handleMotionToggle);
   window.addEventListener(slashEventName, handleSlash);
 
+  document.addEventListener('visibilitychange', () => {
+    const isActive = toggleButton?.dataset.active === 'true';
+
+    if (document.hidden) {
+      stopMotionTracking();
+      if (isActive) {
+        updateStatus('加速度検知は停止中');
+      }
+      return;
+    }
+
+    if (isActive) {
+      const threshold = getThresholdValue();
+      startMotionTracking({ threshold });
+      updateStatus('加速度検知中');
+    }
+  });
+
   window.addEventListener('beforeunload', stopCamera);
   window.addEventListener('pagehide', stopCamera);
+  window.addEventListener('beforeunload', stopMotionTracking);
+  window.addEventListener('pagehide', stopMotionTracking);
 
   updateStatus('加速度検知は停止中');
 });
