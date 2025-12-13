@@ -61,6 +61,22 @@ video {
   font-size: 14px;
 }
 
+.hud-notice,
+.hud-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+  color: #cde2ff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.hud-hint {
+  color: #ffd5a5;
+}
+
 .threshold-control {
   display: grid;
   grid-template-columns: 1fr;
@@ -122,4 +138,46 @@ video {
 
 #toggle-motion:active {
   transform: translateY(1px);
+}
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 4;
+}
+
+.dialog[hidden] {
+  display: none;
+}
+
+.dialog-content {
+  width: min(90vw, 360px);
+  padding: 18px 20px;
+  background: rgba(10, 10, 10, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  color: #fff;
+  display: grid;
+  gap: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dialog-content p {
+  margin: 0;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.dialog-content button {
+  justify-self: end;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #f28b3c;
+  color: #0b0b0b;
+  font-weight: 700;
+  cursor: pointer;
 }

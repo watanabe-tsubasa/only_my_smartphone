@@ -12,6 +12,8 @@
   <audio id="slash-audio" preload="auto" src="assets/slash.mp3"></audio>
   <div class="hud">
     <p id="status" aria-live="polite">初期化中...</p>
+    <p id="https-notice" class="hud-notice" aria-live="polite" hidden>このアプリは HTTPS 環境でのみ動作します。カメラやセンサーを利用する際は HTTPS でアクセスしてください。</p>
+    <p id="motion-permission-hint" class="hud-hint" aria-live="polite" hidden></p>
     <div class="threshold-control" aria-live="polite">
       <div class="threshold-labels">
         <span class="threshold-title">しきい値</span>
@@ -23,6 +25,13 @@
       </div>
     </div>
     <button id="toggle-motion" type="button">加速度検知を開始</button>
+  </div>
+
+  <div id="camera-dialog" class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="camera-dialog-message" hidden>
+    <div class="dialog-content">
+      <p id="camera-dialog-message"></p>
+      <button id="camera-retry" type="button">カメラを再試行</button>
+    </div>
   </div>
 
   <script type="module" src="js/main.js"></script>
