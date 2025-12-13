@@ -1,4 +1,4 @@
-import { startCamera } from './camera.js';
+import { startCamera, stopCamera } from './camera.js';
 import { requestMotionPermission, startMotionTracking, slashEventName, stopMotionTracking } from './motion.js';
 import { renderSlash, setupSlashCanvas } from './slash.js';
 
@@ -181,6 +181,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   toggleButton?.addEventListener('click', handleMotionToggle);
   window.addEventListener(slashEventName, handleSlash);
+
+  window.addEventListener('beforeunload', stopCamera);
+  window.addEventListener('pagehide', stopCamera);
 
   updateStatus('加速度検知は停止中');
 });
