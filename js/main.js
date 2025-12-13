@@ -5,6 +5,12 @@ import { renderSlash, setupSlashCanvas } from './slash.js';
 const statusText = document.getElementById('status');
 const toggleButton = document.getElementById('toggle-motion');
 const slashAudio = document.getElementById('slash-audio');
+const thresholdRange = document.getElementById('threshold-range');
+const thresholdInput = document.getElementById('threshold-input');
+const thresholdDisplay = document.getElementById('threshold-display');
+
+const STORAGE_KEY_THRESHOLD = 'slash-threshold';
+const DEFAULT_THRESHOLD = 12;
 
 let audioInitialized = false;
 
@@ -12,6 +18,36 @@ function updateStatus(message) {
   if (statusText) {
     statusText.textContent = message;
   }
+}
+
+function loadStoredThreshold() {
+  const stored = localStorage.getItem(STORAGE_KEY_THRESHOLD);
+  const value = stored !== null ? Number.parseFloat(stored) : NaN;
+  return Number.isFinite(value) ? value : null;
+}
+
+function persistThreshold(value) {
+  if (!Number.isFinite(value)) return;
+  localStorage.setItem(STORAGE_KEY_THRESHOLD, String(value));
+}
+
+function getThresholdValue() {
+  if (!thresholdInput) return undefined;
+  const value = Number.parseFloat(thresholdInput.value);
+  return Number.isFinite(value) ? value : undefined;
+}
+
+function syncThresholdDisplay(value) {
+  if (thresholdDisplay) {
+    thresholdDisplay.textContent = Number.isFinite(value) ? `${value.toFixed(1)} Δ` : '--';
+  }
+}
+
+function syncThresholdInputs(value) {
+  if (!Number.isFinite(value)) return;
+  if (thresholdRange) thresholdRange.value = value;
+  if (thresholdInput) thresholdInput.value = value;
+  syncThresholdDisplay(value);
 }
 
 async function initializeAudio() {
@@ -80,7 +116,8 @@ async function handleMotionToggle() {
     return;
   }
 
-  startMotionTracking();
+  const threshold = getThresholdValue();
+  startMotionTracking({ threshold });
   toggleButton.dataset.active = 'true';
   toggleButton.textContent = '加速度検知を停止';
   updateStatus('加速度検知中');
@@ -96,6 +133,25 @@ function handleSlash(event) {
 document.addEventListener('DOMContentLoaded', async () => {
   await startCamera();
   setupSlashCanvas();
+
+  const initialThreshold = loadStoredThreshold() ?? DEFAULT_THRESHOLD;
+  syncThresholdInputs(initialThreshold);
+
+  thresholdRange?.addEventListener('input', (event) => {
+    const value = Number.parseFloat(event.target.value);
+    if (!Number.isFinite(value)) return;
+    thresholdInput.value = value;
+    syncThresholdDisplay(value);
+    persistThreshold(value);
+  });
+
+  thresholdInput?.addEventListener('input', (event) => {
+    const value = Number.parseFloat(event.target.value);
+    if (!Number.isFinite(value)) return;
+    thresholdRange.value = value;
+    syncThresholdDisplay(value);
+    persistThreshold(value);
+  });
 
   toggleButton?.addEventListener('click', handleMotionToggle);
   window.addEventListener(slashEventName, handleSlash);
