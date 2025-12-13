@@ -44,7 +44,9 @@ export async function startCamera() {
     return false;
   }
 
-  if (videoElement.srcObject) return true;
+  if (videoElement.srcObject) {
+    stopCamera();
+  }
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -67,4 +69,18 @@ export async function startCamera() {
     showCameraDialog(message, { allowRetry: true });
     return false;
   }
+}
+
+/**
+ * Stop the current camera stream and release media tracks.
+ */
+export function stopCamera() {
+  const stream = videoElement.srcObject;
+  if (!stream) return;
+
+  if (stream instanceof MediaStream) {
+    stream.getTracks().forEach((track) => track.stop());
+  }
+
+  videoElement.srcObject = null;
 }
