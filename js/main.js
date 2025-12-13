@@ -1,5 +1,6 @@
 import { startCamera } from './camera.js';
 import { requestMotionPermission, startMotionTracking, slashEventName, stopMotionTracking } from './motion.js';
+import { renderSlash, setupSlashCanvas } from './slash.js';
 
 const statusText = document.getElementById('status');
 const toggleButton = document.getElementById('toggle-motion');
@@ -36,10 +37,12 @@ async function handleMotionToggle() {
 function handleSlash(event) {
   const { direction, magnitude } = event.detail;
   updateStatus(`斬撃: ${direction} (Δ=${magnitude.toFixed(2)})`);
+  renderSlash(event.detail);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   await startCamera();
+  setupSlashCanvas();
 
   toggleButton?.addEventListener('click', handleMotionToggle);
   window.addEventListener(slashEventName, handleSlash);
