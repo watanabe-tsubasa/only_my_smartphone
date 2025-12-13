@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Only My Smartphone</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <p class="eyebrow">Web Demo</p>
+      <h1>Only My Smartphone</h1>
+      <p class="lede">カメラ・モーション・効果音を手早く試すためのミニマルなフロントエンドです。ビルド工程なしで動作し、ES Modulesで読み込まれます。</p>
+    </div>
+  </header>
+
+  <main class="container grid">
+    <section class="card" id="camera-section">
+      <div class="card__header">
+        <p class="eyebrow">Camera</p>
+        <h2>カメラプレビュー</h2>
+      </div>
+      <p class="card__body">スマートフォンのリア/フロントカメラをブラウザから直接プレビューします。ボタンで開始・停止を切り替えられます。</p>
+      <div class="panel">
+        <video id="cameraPreview" playsinline muted></video>
+        <div class="controls">
+          <button id="startCamera" class="button">カメラ開始</button>
+          <button id="stopCamera" class="button button--ghost" disabled>停止</button>
+          <span id="cameraStatus" class="status">待機中</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="motion-section">
+      <div class="card__header">
+        <p class="eyebrow">Motion</p>
+        <h2>モーションセンサー</h2>
+      </div>
+      <p class="card__body">DeviceMotion / DeviceOrientation イベントを購読し、加速度やオリエンテーションを表示します。iOS の場合はボタンで許可をリクエストしてください。</p>
+      <div class="panel">
+        <div class="readouts">
+          <div>
+            <p class="label">加速度 (m/s²)</p>
+            <p id="acceleration" class="value">-</p>
+          </div>
+          <div>
+            <p class="label">オリエンテーション (°)</p>
+            <p id="orientation" class="value">-</p>
+          </div>
+        </div>
+        <div class="controls">
+          <button id="enableMotion" class="button">モーション計測を開始</button>
+          <span id="motionStatus" class="status">待機中</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="slash-section">
+      <div class="card__header">
+        <p class="eyebrow">Effect</p>
+        <h2>スラッシュ効果音</h2>
+      </div>
+      <p class="card__body">アセットの <code>assets/slash.mp3</code> を再生するデモです。任意の効果音ファイルを置き換えて利用できます。</p>
+      <div class="panel">
+        <div class="controls">
+          <button id="slashButton" class="button">再生する</button>
+          <span id="slashStatus" class="status">待機中</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>ローカルサーバー上でそのまま動作するシンプルなサンプルです。HTTPS 環境でのアクセスが推奨されます。</p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
