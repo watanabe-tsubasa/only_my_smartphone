@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Only My Smartphone</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <main id="app" aria-live="polite">
+    <video id="camera" playsinline autoplay muted></video>
+    <canvas id="slash-canvas"></canvas>
+
+    <div id="ui-layer">
+      <div id="status-panel">
+        <p id="camera-status" class="status-text">カメラの許可を確認しています…</p>
+        <p id="motion-status" class="status-text">モーションの許可を確認しています…</p>
+      </div>
+      <div id="actions">
+        <button id="retry-camera" class="action-button hidden" type="button">カメラを再試行</button>
+        <button id="request-motion" class="action-button hidden" type="button">モーション許可を有効にする</button>
+      </div>
+      <p id="hint-text" class="hint-text">カメラとモーションの許可をオンにすると、振って斬撃を放てます。</p>
+    </div>
+
+    <div id="guide-overlay" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="guide-card">
+        <p class="guide-title">振って斬る</p>
+        <p class="guide-body">スマホを軽く振って斬撃を発生させよう。カメラに映る景色の上に斬撃が重なります。</p>
+        <button id="close-guide" class="action-button" type="button">OK</button>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

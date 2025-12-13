@@ -1,0 +1,161 @@
+:root {
+  color-scheme: dark;
+  --accent: #4ae3ff;
+  --bg: #0b0d12;
+  --panel: rgba(12, 14, 20, 0.65);
+  --text: #e8f1ff;
+  --muted: #9ab6d1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 20%, rgba(74, 227, 255, 0.08), transparent 40%),
+    radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.06), transparent 45%);
+}
+
+#camera {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #05070c;
+  filter: saturate(1.1);
+}
+
+#slash-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#ui-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  gap: 10px;
+  background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.35) 95%);
+}
+
+#status-panel {
+  background: var(--panel);
+  padding: 12px 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+}
+
+.status-text {
+  margin: 0;
+  line-height: 1.5;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.status-text + .status-text {
+  margin-top: 6px;
+}
+
+#actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  flex: 1 1 auto;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(74, 227, 255, 0.15);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.action-button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hint-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 7, 12, 0.8);
+  backdrop-filter: blur(6px);
+  z-index: 10;
+}
+
+.guide-card {
+  width: 90%;
+  max-width: 360px;
+  padding: 20px;
+  border-radius: 16px;
+  background: radial-gradient(circle at 30% 20%, rgba(74, 227, 255, 0.18), rgba(0, 6, 14, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+
+.guide-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+}
+
+.guide-body {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@media (min-width: 600px) {
+  #status-panel {
+    width: 340px;
+  }
+}
