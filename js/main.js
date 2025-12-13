@@ -8,6 +8,8 @@ const slashAudio = document.getElementById('slash-audio');
 const thresholdRange = document.getElementById('threshold-range');
 const thresholdInput = document.getElementById('threshold-input');
 const thresholdDisplay = document.getElementById('threshold-display');
+const httpsNotice = document.getElementById('https-notice');
+const motionPermissionHint = document.getElementById('motion-permission-hint');
 
 const STORAGE_KEY_THRESHOLD = 'slash-threshold';
 const DEFAULT_THRESHOLD = 12;
@@ -18,6 +20,17 @@ function updateStatus(message) {
   if (statusText) {
     statusText.textContent = message;
   }
+}
+
+function showMotionHint(message) {
+  if (!motionPermissionHint) return;
+  motionPermissionHint.textContent = message;
+  motionPermissionHint.hidden = false;
+}
+
+function hideMotionHint() {
+  if (!motionPermissionHint) return;
+  motionPermissionHint.hidden = true;
 }
 
 function loadStoredThreshold() {
@@ -112,7 +125,10 @@ async function handleMotionToggle() {
   await initializeAudio();
   const permission = await requestMotionPermission();
   if (permission !== 'granted') {
-    updateStatus('加速度センサーの許可が必要です');
+    updateStatus('加速度センサーの許可が必要です。許可後に再度ボタンを押してください。');
+    showMotionHint(
+      'iOS Safari では画面に触れるなどのユーザー操作が必要です。許可ダイアログが表示されたら許可してから「加速度検知を開始」を再度押してください。'
+    );
     return;
   }
 
@@ -121,6 +137,7 @@ async function handleMotionToggle() {
   toggleButton.dataset.active = 'true';
   toggleButton.textContent = '加速度検知を停止';
   updateStatus('加速度検知中');
+  hideMotionHint();
 }
 
 function handleSlash(event) {
@@ -133,6 +150,15 @@ function handleSlash(event) {
 document.addEventListener('DOMContentLoaded', async () => {
   await startCamera();
   setupSlashCanvas();
+
+  if (
+    httpsNotice &&
+    location.protocol !== 'https:' &&
+    location.hostname !== 'localhost' &&
+    location.hostname !== '127.0.0.1'
+  ) {
+    httpsNotice.hidden = false;
+  }
 
   const initialThreshold = loadStoredThreshold() ?? DEFAULT_THRESHOLD;
   syncThresholdInputs(initialThreshold);
