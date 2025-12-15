@@ -1,5 +1,12 @@
 import { startCamera, stopCamera } from './camera.js';
-import { requestMotionPermission, startMotionTracking, slashEventName, stopMotionTracking } from './motion.js';
+import {
+  getMotionSupportInfo,
+  motionFailureReasons,
+  requestMotionPermission,
+  startMotionTracking,
+  slashEventName,
+  stopMotionTracking,
+} from './motion.js';
 import { renderSlash, setupSlashCanvas } from './slash.js';
 
 const statusText = document.getElementById('status');
@@ -122,22 +129,50 @@ async function handleMotionToggle() {
     return;
   }
 
+  const support = getMotionSupportInfo();
+  if (!support.supported) {
+    updateStatus('この端末は加速度センサーに対応していません。');
+    showMotionHint('センサー非搭載の端末では利用できません。別の端末やブラウザでお試しください。');
+    return;
+  }
+
   await initializeAudio();
   const permission = await requestMotionPermission();
   if (permission !== 'granted') {
-    updateStatus('加速度センサーの許可が必要です。許可後に再度ボタンを押してください。');
-    showMotionHint(
-      'iOS Safari では画面に触れるなどのユーザー操作が必要です。許可ダイアログが表示されたら許可してから「加速度検知を開始」を再度押してください。'
-    );
+    updateStatus('加速度センサーの許可が必要です。');
+    showMotionHint(`ブラウザやOSの設定でモーション／加速度センサーの利用を許可してください。iOS Safari では画面に触れるなどの操作後に表示される許可ダイアログを承認し、「モーションと画面の向きにアクセス」をオンにしてください。許可後に「加速度検知を開始」を押してください。`);
     return;
   }
 
   const threshold = getThresholdValue();
-  startMotionTracking({ threshold });
+  const { started, reason } = startMotionTracking({
+    threshold,
+    timeoutMs: 3000,
+    onTimeout: handleMotionTimeout,
+  });
+
+  if (!started) {
+    if (reason === motionFailureReasons.UNSUPPORTED) {
+      updateStatus('加速度センサーに対応していないため開始できません。');
+      showMotionHint('端末がセンサーに対応していないか、ブラウザがブロックしています。別の環境でお試しください。');
+    }
+    return;
+  }
+
   toggleButton.dataset.active = 'true';
   toggleButton.textContent = '加速度検知を停止';
-  updateStatus('加速度検知中');
+  updateStatus('加速度検知中。端末を軽く振って反応を確認してください。');
   hideMotionHint();
+}
+
+function handleMotionTimeout({ timeoutMs } = {}) {
+  stopMotionTracking();
+  if (toggleButton) {
+    toggleButton.dataset.active = 'false';
+    toggleButton.textContent = '加速度検知を開始';
+  }
+  updateStatus('加速度イベントを受信できませんでした。センサーがブロックされている可能性があります。');
+  showMotionHint(`ブラウザの設定で「モーションと方向」や「加速度センサー」を許可してから再試行してください。必要に応じてページを再読み込みし、再度「加速度検知を開始」を押してください（待ち時間目安: ${timeoutMs ?? 0}ms）。`);
 }
 
 function handleSlash(event) {
@@ -195,7 +230,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (isActive) {
       const threshold = getThresholdValue();
-      startMotionTracking({ threshold });
+      startMotionTracking({
+        threshold,
+        timeoutMs: 3000,
+        onTimeout: handleMotionTimeout,
+      });
       updateStatus('加速度検知中');
     }
   });
