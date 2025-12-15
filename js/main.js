@@ -22,6 +22,7 @@ const STORAGE_KEY_THRESHOLD = 'slash-threshold';
 const DEFAULT_THRESHOLD = 12;
 
 let audioInitialized = false;
+let audioEnabled = true;
 
 function updateStatus(message) {
   if (statusText) {
@@ -71,11 +72,10 @@ function syncThresholdInputs(value) {
 }
 
 async function initializeAudio() {
-  if (audioInitialized || !slashAudio) return true;
-
-  if (!slashAudio.getAttribute('src')) {
-    updateStatus('音声ファイルが設定されていません。assets/slash.mp3 を配置してください。');
-    return false;
+  if (audioInitialized || !audioEnabled) return true;
+  if (!slashAudio || !slashAudio.getAttribute('src')) {
+    audioEnabled = false;
+    return true;
   }
 
   try {
@@ -91,14 +91,14 @@ async function initializeAudio() {
     audioInitialized = true;
     return true;
   } catch (error) {
-    console.error('Failed to initialize audio', error);
-    updateStatus('音声初期化に失敗しました。端末の設定を確認してください。');
-    return false;
+    console.warn('Failed to initialize audio; continuing without sound', error);
+    audioEnabled = false;
+    return true;
   }
 }
 
 function playSlashSound(magnitude = 0) {
-  if (!audioInitialized || !slashAudio) return;
+  if (!audioInitialized || !audioEnabled || !slashAudio) return;
 
   const normalized = Math.min(Math.max(magnitude / 20, 0), 1);
   slashAudio.volume = Math.min(1, 0.35 + normalized * 0.55);
