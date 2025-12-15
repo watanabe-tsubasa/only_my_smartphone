@@ -1,4 +1,4 @@
-const DEFAULT_THRESHOLD = 12; // m/s^2 equivalent, tunable after real-world measurement
+const DEFAULT_THRESHOLD = 9.5; // m/s^2 equivalent, tuned from real-world measurement
 const SLASH_EVENT_NAME = 'slash';
 
 let lastAcceleration = null;
@@ -8,6 +8,7 @@ let dispatchTarget = typeof window !== 'undefined' ? window : null;
 let timeoutId = null;
 let onTimeout = null;
 let timeoutMs = 2500;
+let onDelta = null;
 
 const UNSUPPORTED_REASON = 'unsupported';
 const NO_EVENTS_REASON = 'no-events';
@@ -49,6 +50,7 @@ export function requestMotionPermission() {
  * @param {EventTarget} [options.target] - Dispatch target for slash events (defaults to window).
  * @param {number} [options.timeoutMs] - Duration to wait for the first event before triggering onTimeout.
  * @param {(info: { reason: string; timeoutMs: number }) => void} [options.onTimeout] - Callback invoked when no motion events arrive.
+ * @param {(delta: { dx: number; dy: number; dz: number; magnitude: number; timestamp: number }) => void} [options.onDelta] - Callback invoked on each motion event with delta magnitude.
  */
 export function startMotionTracking(options = {}) {
   const support = getMotionSupportInfo();
@@ -61,6 +63,7 @@ export function startMotionTracking(options = {}) {
   dispatchTarget = options.target || dispatchTarget || window;
   timeoutMs = Number.isFinite(options.timeoutMs) ? options.timeoutMs : 2500;
   onTimeout = typeof options.onTimeout === 'function' ? options.onTimeout : null;
+  onDelta = typeof options.onDelta === 'function' ? options.onDelta : null;
   clearTimeout(timeoutId);
   timeoutId = window.setTimeout(() => {
     onTimeout?.({ reason: NO_EVENTS_REASON, timeoutMs });
@@ -78,6 +81,7 @@ export function stopMotionTracking() {
   window.removeEventListener('devicemotion', handleMotion);
   clearTimeout(timeoutId);
   timeoutId = null;
+  onDelta = null;
   isTracking = false;
   lastAcceleration = null;
 }
@@ -102,6 +106,8 @@ function handleMotion(event) {
   const magnitude = Math.sqrt(dx ** 2 + dy ** 2 + dz ** 2);
 
   lastAcceleration = current;
+
+  onDelta?.({ dx, dy, dz, magnitude, timestamp: event.timeStamp });
 
   if (magnitude < threshold) return;
 

@@ -20,8 +20,18 @@
         <span id="threshold-display" class="threshold-value">--</span>
       </div>
       <div class="threshold-inputs">
-        <input id="threshold-range" type="range" min="4" max="30" step="0.5" value="12" aria-label="しきい値スライダー">
-        <input id="threshold-input" type="number" min="0" max="50" step="0.1" value="12" inputmode="decimal" aria-label="しきい値を数値入力">
+        <input id="threshold-range" type="range" min="4" max="30" step="0.5" value="9.5" aria-label="しきい値スライダー">
+        <input id="threshold-input" type="number" min="0" max="50" step="0.1" value="9.5" inputmode="decimal" aria-label="しきい値を数値入力">
+      </div>
+    </div>
+    <div class="debug-hud" aria-live="polite">
+      <div class="debug-row">
+        <span class="debug-label">最新Δ</span>
+        <span id="magnitude-display" class="debug-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">許可状態</span>
+        <span id="permission-display" class="debug-value">--</span>
       </div>
     </div>
     <button id="toggle-motion" type="button">加速度検知を開始</button>
