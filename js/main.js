@@ -15,11 +15,13 @@ const slashAudio = document.getElementById('slash-audio');
 const thresholdRange = document.getElementById('threshold-range');
 const thresholdInput = document.getElementById('threshold-input');
 const thresholdDisplay = document.getElementById('threshold-display');
+const magnitudeDisplay = document.getElementById('magnitude-display');
+const permissionDisplay = document.getElementById('permission-display');
 const httpsNotice = document.getElementById('https-notice');
 const motionPermissionHint = document.getElementById('motion-permission-hint');
 
 const STORAGE_KEY_THRESHOLD = 'slash-threshold';
-const DEFAULT_THRESHOLD = 12;
+const DEFAULT_THRESHOLD = 9.5;
 
 let audioInitialized = false;
 
@@ -68,6 +70,16 @@ function syncThresholdInputs(value) {
   if (thresholdRange) thresholdRange.value = value;
   if (thresholdInput) thresholdInput.value = value;
   syncThresholdDisplay(value);
+}
+
+function syncMagnitudeDisplay(value) {
+  if (!magnitudeDisplay) return;
+  magnitudeDisplay.textContent = Number.isFinite(value) ? `${value.toFixed(2)} Δ` : '--';
+}
+
+function updatePermissionDisplay(state) {
+  if (!permissionDisplay) return;
+  permissionDisplay.textContent = state;
 }
 
 async function initializeAudio() {
@@ -126,6 +138,7 @@ async function handleMotionToggle() {
     toggleButton.dataset.active = 'false';
     toggleButton.textContent = '加速度検知を開始';
     updateStatus('加速度検知は停止中');
+    syncMagnitudeDisplay(null);
     return;
   }
 
@@ -133,11 +146,21 @@ async function handleMotionToggle() {
   if (!support.supported) {
     updateStatus('この端末は加速度センサーに対応していません。');
     showMotionHint('センサー非搭載の端末では利用できません。別の端末やブラウザでお試しください。');
+    updatePermissionDisplay('非対応');
     return;
+  }
+
+  if (support.permissionRequired) {
+    updatePermissionDisplay('許可確認中');
   }
 
   await initializeAudio();
   const permission = await requestMotionPermission();
+  if (permission === 'granted') {
+    updatePermissionDisplay('許可済み');
+  } else {
+    updatePermissionDisplay('未許可/拒否');
+  }
   if (permission !== 'granted') {
     updateStatus('加速度センサーの許可が必要です。');
     showMotionHint(`ブラウザやOSの設定でモーション／加速度センサーの利用を許可してください。iOS Safari では画面に触れるなどの操作後に表示される許可ダイアログを承認し、「モーションと画面の向きにアクセス」をオンにしてください。許可後に「加速度検知を開始」を押してください。`);
@@ -149,6 +172,7 @@ async function handleMotionToggle() {
     threshold,
     timeoutMs: 3000,
     onTimeout: handleMotionTimeout,
+    onDelta: handleMotionDelta,
   });
 
   if (!started) {
@@ -173,6 +197,7 @@ function handleMotionTimeout({ timeoutMs } = {}) {
   }
   updateStatus('加速度イベントを受信できませんでした。センサーがブロックされている可能性があります。');
   showMotionHint(`ブラウザの設定で「モーションと方向」や「加速度センサー」を許可してから再試行してください。必要に応じてページを再読み込みし、再度「加速度検知を開始」を押してください（待ち時間目安: ${timeoutMs ?? 0}ms）。`);
+  syncMagnitudeDisplay(null);
 }
 
 function handleSlash(event) {
@@ -180,6 +205,10 @@ function handleSlash(event) {
   updateStatus(`斬撃: ${direction} (Δ=${magnitude.toFixed(2)})`);
   renderSlash(event.detail);
   playSlashSound(magnitude);
+}
+
+function handleMotionDelta({ magnitude }) {
+  syncMagnitudeDisplay(magnitude);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -197,6 +226,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const initialThreshold = loadStoredThreshold() ?? DEFAULT_THRESHOLD;
   syncThresholdInputs(initialThreshold);
+  syncMagnitudeDisplay(null);
+
+  const support = getMotionSupportInfo();
+  if (!support.supported) {
+    updatePermissionDisplay('非対応');
+  } else if (support.permissionRequired) {
+    updatePermissionDisplay('未確認');
+  } else {
+    updatePermissionDisplay('不要/自動許可');
+  }
 
   thresholdRange?.addEventListener('input', (event) => {
     const value = Number.parseFloat(event.target.value);
@@ -225,6 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (isActive) {
         updateStatus('加速度検知は停止中');
       }
+      syncMagnitudeDisplay(null);
       return;
     }
 
@@ -234,6 +274,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         threshold,
         timeoutMs: 3000,
         onTimeout: handleMotionTimeout,
+        onDelta: handleMotionDelta,
       });
       updateStatus('加速度検知中');
     }

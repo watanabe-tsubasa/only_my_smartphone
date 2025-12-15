@@ -125,6 +125,35 @@ video {
   color: #fff;
 }
 
+.debug-hud {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.debug-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: #f0f4ff;
+}
+
+.debug-label {
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+
+.debug-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
 #toggle-motion {
   padding: 10px 16px;
   border: none;
