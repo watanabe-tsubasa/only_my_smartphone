@@ -9,6 +9,22 @@
 <body>
   <video id="camera" playsinline autoplay muted></video>
   <canvas id="slash-canvas" aria-hidden="true"></canvas>
+  <div id="motion-overlay" class="motion-overlay" aria-live="polite">
+    <div class="motion-row">
+      <span class="motion-label">X</span>
+      <span id="delta-x" class="motion-value">--</span>
+      <span class="motion-label">Y</span>
+      <span id="delta-y" class="motion-value">--</span>
+      <span class="motion-label">Z</span>
+      <span id="delta-z" class="motion-value">--</span>
+    </div>
+    <div class="motion-row">
+      <span class="motion-label">Δ</span>
+      <span id="delta-magnitude" class="motion-value">--</span>
+      <span class="motion-label">時刻</span>
+      <span id="delta-timestamp" class="motion-value">--</span>
+    </div>
+  </div>
   <audio id="slash-audio" preload="auto" src="assets/slash.mp3"></audio>
   <div class="hud">
     <p id="status" aria-live="polite">初期化中...</p>

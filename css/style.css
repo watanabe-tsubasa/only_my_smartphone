@@ -42,6 +42,47 @@ video {
   z-index: 3;
 }
 
+.motion-overlay {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(960px, 92vw);
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  color: #f3f6ff;
+  z-index: 4;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
+
+.motion-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, auto));
+  gap: 8px;
+  align-items: baseline;
+  font-size: 14px;
+}
+
+.motion-label {
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  color: #a8c7ff;
+}
+
+.motion-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: #fff;
+  min-width: 68px;
+  text-align: right;
+}
+
 .hud {
   position: fixed;
   bottom: 0;

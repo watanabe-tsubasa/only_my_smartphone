@@ -17,6 +17,11 @@ const thresholdInput = document.getElementById('threshold-input');
 const thresholdDisplay = document.getElementById('threshold-display');
 const magnitudeDisplay = document.getElementById('magnitude-display');
 const permissionDisplay = document.getElementById('permission-display');
+const deltaXDisplay = document.getElementById('delta-x');
+const deltaYDisplay = document.getElementById('delta-y');
+const deltaZDisplay = document.getElementById('delta-z');
+const deltaMagnitudeDisplay = document.getElementById('delta-magnitude');
+const deltaTimestampDisplay = document.getElementById('delta-timestamp');
 const httpsNotice = document.getElementById('https-notice');
 const motionPermissionHint = document.getElementById('motion-permission-hint');
 
@@ -25,6 +30,7 @@ const DEFAULT_THRESHOLD = 9.5;
 
 let audioInitialized = false;
 let audioEnabled = true;
+let lastMotionDelta = null;
 
 function updateStatus(message) {
   if (statusText) {
@@ -83,6 +89,47 @@ function updatePermissionDisplay(state) {
   permissionDisplay.textContent = state;
 }
 
+function formatDelta(value) {
+  return Number.isFinite(value) ? value.toFixed(2) : '--';
+}
+
+function formatTimestamp(timestamp) {
+  if (!Number.isFinite(timestamp)) return '--';
+  const wallClock = new Date(performance.timeOrigin + timestamp);
+  return wallClock.toLocaleTimeString('ja-JP', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 2,
+  });
+}
+
+function renderMotionOverlay(delta) {
+  if (!deltaXDisplay || !deltaYDisplay || !deltaZDisplay || !deltaMagnitudeDisplay || !deltaTimestampDisplay) return;
+
+  const { dx, dy, dz, magnitude, timestamp } = delta ?? {};
+  deltaXDisplay.textContent = formatDelta(dx);
+  deltaYDisplay.textContent = formatDelta(dy);
+  deltaZDisplay.textContent = formatDelta(dz);
+  deltaMagnitudeDisplay.textContent = Number.isFinite(magnitude) ? `${magnitude.toFixed(2)} Δ` : '--';
+  deltaTimestampDisplay.textContent = formatTimestamp(timestamp);
+}
+
+function clearMotionOverlay() {
+  renderMotionOverlay(null);
+}
+
+function renderLastMotionDelta() {
+  if (lastMotionDelta) {
+    renderMotionOverlay(lastMotionDelta);
+    syncMagnitudeDisplay(lastMotionDelta.magnitude);
+  } else {
+    clearMotionOverlay();
+    syncMagnitudeDisplay(null);
+  }
+}
+
 async function initializeAudio() {
   if (audioInitialized || !audioEnabled) return true;
   if (!slashAudio || !slashAudio.getAttribute('src')) {
@@ -139,6 +186,7 @@ async function handleMotionToggle() {
     toggleButton.textContent = '加速度検知を開始';
     updateStatus('加速度検知は停止中');
     syncMagnitudeDisplay(null);
+    clearMotionOverlay();
     return;
   }
 
@@ -187,6 +235,7 @@ async function handleMotionToggle() {
   toggleButton.textContent = '加速度検知を停止';
   updateStatus('加速度検知中。端末を軽く振って反応を確認してください。');
   hideMotionHint();
+  renderLastMotionDelta();
 }
 
 function handleMotionTimeout({ timeoutMs } = {}) {
@@ -198,6 +247,7 @@ function handleMotionTimeout({ timeoutMs } = {}) {
   updateStatus('加速度イベントを受信できませんでした。センサーがブロックされている可能性があります。');
   showMotionHint(`ブラウザの設定で「モーションと方向」や「加速度センサー」を許可してから再試行してください。必要に応じてページを再読み込みし、再度「加速度検知を開始」を押してください（待ち時間目安: ${timeoutMs ?? 0}ms）。`);
   syncMagnitudeDisplay(null);
+  clearMotionOverlay();
 }
 
 function handleSlash(event) {
@@ -207,7 +257,10 @@ function handleSlash(event) {
   playSlashSound(magnitude);
 }
 
-function handleMotionDelta({ magnitude }) {
+function handleMotionDelta(delta) {
+  const { magnitude } = delta;
+  lastMotionDelta = delta;
+  renderMotionOverlay(lastMotionDelta);
   syncMagnitudeDisplay(magnitude);
 }
 
@@ -265,6 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateStatus('加速度検知は停止中');
       }
       syncMagnitudeDisplay(null);
+      clearMotionOverlay();
       return;
     }
 
@@ -277,6 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         onDelta: handleMotionDelta,
       });
       updateStatus('加速度検知中');
+      renderLastMotionDelta();
     }
   });
 
@@ -286,4 +341,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('pagehide', stopMotionTracking);
 
   updateStatus('加速度検知は停止中');
+  clearMotionOverlay();
 });
