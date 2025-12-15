@@ -5,6 +5,27 @@ let lastAcceleration = null;
 let isTracking = false;
 let threshold = DEFAULT_THRESHOLD;
 let dispatchTarget = typeof window !== 'undefined' ? window : null;
+let timeoutId = null;
+let onTimeout = null;
+let timeoutMs = 2500;
+
+const UNSUPPORTED_REASON = 'unsupported';
+const NO_EVENTS_REASON = 'no-events';
+
+/**
+ * Check whether DeviceMotion is available on this browser/OS.
+ * @returns {{ supported: boolean; permissionRequired: boolean; reason?: string }}
+ */
+export function getMotionSupportInfo() {
+  const hasDeviceMotionEvent = typeof DeviceMotionEvent !== 'undefined';
+  const permissionRequired = hasDeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function';
+
+  return {
+    supported: hasDeviceMotionEvent,
+    permissionRequired,
+    reason: hasDeviceMotionEvent ? undefined : UNSUPPORTED_REASON,
+  };
+}
 
 /**
  * Request permission for motion sensors when supported (e.g., iOS Safari).
@@ -26,14 +47,27 @@ export function requestMotionPermission() {
  * @param {object} [options]
  * @param {number} [options.threshold] - Minimum magnitude delta to trigger a slash.
  * @param {EventTarget} [options.target] - Dispatch target for slash events (defaults to window).
+ * @param {number} [options.timeoutMs] - Duration to wait for the first event before triggering onTimeout.
+ * @param {(info: { reason: string; timeoutMs: number }) => void} [options.onTimeout] - Callback invoked when no motion events arrive.
  */
 export function startMotionTracking(options = {}) {
-  if (isTracking) return;
+  const support = getMotionSupportInfo();
+  if (!support.supported) {
+    return { started: false, reason: UNSUPPORTED_REASON };
+  }
+  if (isTracking) return { started: true };
 
   threshold = typeof options.threshold === 'number' ? options.threshold : DEFAULT_THRESHOLD;
   dispatchTarget = options.target || dispatchTarget || window;
+  timeoutMs = Number.isFinite(options.timeoutMs) ? options.timeoutMs : 2500;
+  onTimeout = typeof options.onTimeout === 'function' ? options.onTimeout : null;
+  clearTimeout(timeoutId);
+  timeoutId = window.setTimeout(() => {
+    onTimeout?.({ reason: NO_EVENTS_REASON, timeoutMs });
+  }, timeoutMs);
   window.addEventListener('devicemotion', handleMotion, { passive: true });
   isTracking = true;
+  return { started: true };
 }
 
 /**
@@ -42,11 +76,18 @@ export function startMotionTracking(options = {}) {
 export function stopMotionTracking() {
   if (!isTracking) return;
   window.removeEventListener('devicemotion', handleMotion);
+  clearTimeout(timeoutId);
+  timeoutId = null;
   isTracking = false;
   lastAcceleration = null;
 }
 
 function handleMotion(event) {
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+    timeoutId = null;
+  }
+
   const current = extractAcceleration(event);
   if (!current) return;
 
@@ -97,6 +138,10 @@ function directionFromAngle(angleRad) {
 }
 
 export const slashEventName = SLASH_EVENT_NAME;
+export const motionFailureReasons = {
+  UNSUPPORTED: UNSUPPORTED_REASON,
+  NO_EVENTS: NO_EVENTS_REASON,
+};
 
 /**
  * Utility: derive the angle (radians) and categorical direction from dx/dy deltas.
