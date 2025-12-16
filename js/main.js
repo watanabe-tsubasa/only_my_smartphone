@@ -28,7 +28,6 @@ const deltaMagnitudeDisplay = document.getElementById('delta-magnitude');
 const deltaTimestampDisplay = document.getElementById('delta-timestamp');
 const httpsNotice = document.getElementById('https-notice');
 const motionPermissionHint = document.getElementById('motion-permission-hint');
-const cameraElement = document.getElementById('camera');
 
 const STORAGE_KEY_THRESHOLD = 'slash-threshold';
 const DEFAULT_THRESHOLD = 9.5;
@@ -207,17 +206,6 @@ async function initializeAudio() {
   }
 }
 
-function isCameraActive() {
-  if (!cameraElement || !cameraElement.srcObject) return false;
-  const stream = cameraElement.srcObject;
-  return stream instanceof MediaStream && stream.active;
-}
-
-async function ensureCameraActive() {
-  if (isCameraActive()) return true;
-  return startCamera();
-}
-
 async function requestMotionPermissionWithUi(trigger = 'button') {
   if (trigger === 'button') {
     updateStatus('センサーアクセスをリクエストします。表示されたダイアログで「許可」を選択してください。');
@@ -282,8 +270,6 @@ async function handleMotionToggle() {
     updateMotionState('停止中');
     return;
   }
-
-  await ensureCameraActive();
 
   const support = getMotionSupportInfo();
   if (!support.supported) {
@@ -381,8 +367,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     httpsNotice.hidden = false;
   }
 
-  await ensureCameraActive();
-
   const initialThreshold = loadStoredThreshold() ?? DEFAULT_THRESHOLD;
   syncThresholdInputs(initialThreshold);
   syncMagnitudeDisplay(null);
@@ -420,7 +404,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   toggleButton?.addEventListener('click', handleMotionToggle);
   motionPermissionButton?.addEventListener('click', async () => {
     updateStatus('センサーアクセスの許可を確認しています...');
-    await ensureCameraActive();
     await requestMotionPermissionWithUi('button');
   });
   window.addEventListener(slashEventName, handleSlash);
