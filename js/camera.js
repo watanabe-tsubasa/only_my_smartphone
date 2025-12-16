@@ -1,5 +1,6 @@
 const videoElement = document.getElementById('camera');
 const statusText = document.getElementById('status');
+const cameraPermissionDisplay = document.getElementById('camera-permission-display');
 const cameraDialog = document.getElementById('camera-dialog');
 const cameraDialogMessage = document.getElementById('camera-dialog-message');
 const cameraRetryButton = document.getElementById('camera-retry');
@@ -21,6 +22,11 @@ function showCameraDialog(message, { allowRetry = true } = {}) {
   }
 }
 
+function updateCameraPermissionDisplay(state) {
+  if (!cameraPermissionDisplay) return;
+  cameraPermissionDisplay.textContent = state;
+}
+
 function hideCameraDialog() {
   if (cameraDialog) {
     cameraDialog.hidden = true;
@@ -40,6 +46,7 @@ export async function startCamera() {
     console.error('この端末はカメラ API に対応していません。');
     const message = 'この端末はカメラ API に非対応です。別の端末からお試しください。';
     updateStatus(message);
+    updateCameraPermissionDisplay('非対応');
     showCameraDialog(message, { allowRetry: false });
     return false;
   }
@@ -49,6 +56,7 @@ export async function startCamera() {
   }
 
   try {
+    updateCameraPermissionDisplay('確認中');
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment' }
     });
@@ -57,6 +65,7 @@ export async function startCamera() {
     await videoElement.play();
     hideCameraDialog();
     updateStatus('カメラを起動しました');
+    updateCameraPermissionDisplay('許可済み');
     return true;
   } catch (error) {
     console.error('カメラの起動に失敗しました:', error);
@@ -66,6 +75,11 @@ export async function startCamera() {
         : 'カメラの起動に失敗しました。端末の設定やカメラの使用状況を確認し、再試行してください。';
 
     updateStatus(message);
+    updateCameraPermissionDisplay(
+      error?.name === 'NotAllowedError' || error?.name === 'SecurityError'
+        ? '拒否'
+        : 'エラー'
+    );
     showCameraDialog(message, { allowRetry: true });
     return false;
   }
@@ -83,4 +97,5 @@ export function stopCamera() {
   }
 
   videoElement.srcObject = null;
+  updateCameraPermissionDisplay('停止中');
 }
