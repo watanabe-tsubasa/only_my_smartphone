@@ -207,7 +207,14 @@ async function initializeAudio() {
 }
 
 async function requestMotionPermissionWithUi(trigger = 'button') {
+  if (trigger === 'button') {
+    updateStatus('センサーアクセスをリクエストします。表示されたダイアログで「許可」を選択してください。');
+  } else {
+    updateStatus('センサーアクセスの許可状態を確認しています。必要に応じてブラウザのダイアログに応答してください。');
+  }
+
   const permission = await requestMotionPermission();
+  console.info(`Motion permission result (${trigger})`, permission);
 
   if (permission === 'granted') {
     setMotionPermissionState('granted');
@@ -220,8 +227,10 @@ async function requestMotionPermissionWithUi(trigger = 'button') {
     setMotionPermissionState('denied');
     showMotionHint('ブラウザの許可ダイアログで「許可」を選択するか、設定で「モーションと方向」/「加速度センサー」を有効にしてください。');
     showMotionPermissionGate('センサーアクセスが拒否されました。設定で許可した後、もう一度「センサーアクセスを許可」をタップしてください。');
+    updateStatus('センサーアクセスが拒否されました。設定を確認して再試行してください。');
   } else {
     setMotionPermissionState('default');
+    updateStatus('許可ダイアログが表示されない場合はブラウザの設定を確認してください。');
   }
 
   return permission;
