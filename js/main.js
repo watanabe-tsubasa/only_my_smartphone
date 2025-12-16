@@ -51,6 +51,19 @@ function hideMotionHint() {
   motionPermissionHint.hidden = true;
 }
 
+function showPermissionGuidance(permissionState = 'default') {
+  if (permissionState === 'denied') {
+    showMotionHint(
+      'ブラウザやOSの設定でモーションセンサーが無効化されています。iOSでは設定アプリ > Safari から「モーションと画面の向きにアクセス」をオンにし、Chrome系ではブラウザの設定 > サイトの設定 > 「モーションセンサー」や「モーションと方向」を許可してください。設定変更後にページを再読み込みし、「加速度検知を開始」を押してください。'
+    );
+    return;
+  }
+
+  showMotionHint(
+    'この機能にはモーション／加速度センサーの許可が必要です。画面をタップするなど操作してから表示される許可ダイアログを承認してください。ダイアログが出ない場合は、設定アプリやブラウザのサイト設定で「モーションと画面の向き」「モーションセンサー」を有効にしてから再度「加速度検知を開始」を押してください。'
+  );
+}
+
 function loadStoredThreshold() {
   const stored = localStorage.getItem(STORAGE_KEY_THRESHOLD);
   const value = stored !== null ? Number.parseFloat(stored) : NaN;
@@ -218,6 +231,7 @@ async function handleMotionToggle() {
   if (permission === 'granted') {
     updatePermissionDisplay('許可済み');
     updateMotionState('許可済み');
+    hideMotionHint();
   } else if (permission === 'denied') {
     updatePermissionDisplay('未許可/拒否');
     updateMotionState('拒否');
@@ -227,7 +241,7 @@ async function handleMotionToggle() {
   }
   if (permission !== 'granted') {
     updateStatus('加速度センサーの許可が必要です。');
-    showMotionHint(`ブラウザやOSの設定でモーション／加速度センサーの利用を許可してください。iOS Safari では画面に触れるなどの操作後に表示される許可ダイアログを承認し、「モーションと画面の向きにアクセス」をオンにしてください。許可後に「加速度検知を開始」を押してください。`);
+    showPermissionGuidance(permission);
     return;
   }
 
@@ -263,7 +277,11 @@ function handleMotionTimeout({ timeoutMs } = {}) {
     toggleButton.textContent = '加速度検知を開始';
   }
   updateStatus('加速度イベントを受信できませんでした。センサーがブロックされている可能性があります。');
-  showMotionHint(`ブラウザの設定で「モーションと方向」や「加速度センサー」を許可してから再試行してください。必要に応じてページを再読み込みし、再度「加速度検知を開始」を押してください（待ち時間目安: ${timeoutMs ?? 0}ms）。`);
+  showMotionHint(
+    `ブラウザの設定で「モーションと方向」や「加速度センサー」を許可してから再試行してください。iOSでは設定アプリ > Safari から「モーションと画面の向きにアクセス」をオンにし、Chrome系ではサイトの設定からモーションセンサーを許可した上で、必要に応じてページを再読み込みして再度「加速度検知を開始」を押してください（待ち時間目安: ${
+      timeoutMs ?? 0
+    }ms）。`
+  );
   syncMagnitudeDisplay(null);
   clearMotionOverlay();
   updateMotionState('イベントなし');
@@ -306,7 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updatePermissionDisplay('非対応');
     updateMotionState('非対応');
   } else if (support.permissionRequired) {
-    updatePermissionDisplay('未確認');
+    updatePermissionDisplay('未確認/要操作');
     updateMotionState('未確認');
   } else {
     updatePermissionDisplay('不要/自動許可');
