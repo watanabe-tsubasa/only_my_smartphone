@@ -12,6 +12,7 @@ let onDelta = null;
 
 const UNSUPPORTED_REASON = 'unsupported';
 const NO_EVENTS_REASON = 'no-events';
+const SENSOR_PERMISSION_NAMES = ['accelerometer', 'gyroscope', 'magnetometer', 'ambient-light-sensor'];
 
 /**
  * Check whether DeviceMotion is available on this browser/OS.
@@ -19,7 +20,12 @@ const NO_EVENTS_REASON = 'no-events';
  */
 export function getMotionSupportInfo() {
   const hasDeviceMotionEvent = typeof DeviceMotionEvent !== 'undefined';
-  const permissionRequired = hasDeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function';
+  const motionPermissionSupported =
+    hasDeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function';
+  const orientationPermissionSupported =
+    typeof DeviceOrientationEvent !== 'undefined' &&
+    typeof DeviceOrientationEvent.requestPermission === 'function';
+  const permissionRequired = hasDeviceMotionEvent && (motionPermissionSupported || orientationPermissionSupported);
 
   return {
     supported: hasDeviceMotionEvent,
@@ -33,13 +39,56 @@ export function getMotionSupportInfo() {
  * @returns {Promise<'granted' | 'denied' | 'default'>}
  */
 export function requestMotionPermission() {
-  if (
-    typeof DeviceMotionEvent !== 'undefined' &&
-    typeof DeviceMotionEvent.requestPermission === 'function'
-  ) {
-    return DeviceMotionEvent.requestPermission();
+  return (async () => {
+    const permissionRequesters = [];
+    const sensorPermission = await checkSensorPermissionState();
+    if (sensorPermission === 'denied') return 'denied';
+
+    if (
+      typeof DeviceMotionEvent !== 'undefined' &&
+      typeof DeviceMotionEvent.requestPermission === 'function'
+    ) {
+      permissionRequesters.push(() => DeviceMotionEvent.requestPermission());
+    }
+
+    if (
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function'
+    ) {
+      permissionRequesters.push(() => DeviceOrientationEvent.requestPermission());
+    }
+
+    if (permissionRequesters.length === 0) {
+      return 'granted';
+    }
+
+    for (const requester of permissionRequesters) {
+      try {
+        const result = await requester();
+        if (result === 'granted' || result === 'denied') return result;
+      } catch (error) {
+        console.warn('Motion permission request failed', error);
+        return 'denied';
+      }
+    }
+
+    return 'default';
+  })();
+}
+
+async function checkSensorPermissionState() {
+  if (typeof navigator === 'undefined' || !navigator.permissions?.query) return null;
+
+  for (const name of SENSOR_PERMISSION_NAMES) {
+    try {
+      const result = await navigator.permissions.query({ name });
+      if (result?.state === 'denied') return 'denied';
+    } catch (error) {
+      // Ignore unsupported descriptors and continue checking others.
+    }
   }
-  return Promise.resolve('granted');
+
+  return null;
 }
 
 /**
