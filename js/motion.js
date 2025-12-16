@@ -36,31 +36,28 @@ export function getMotionSupportInfo() {
 
 /**
  * Request permission for motion sensors when supported (e.g., iOS Safari).
+ * Calls requestPermission directly during the user gesture to avoid consuming
+ * the activation with unrelated async work.
  * @returns {Promise<'granted' | 'denied' | 'default'>}
  */
-export function requestMotionPermission() {
-  return (async () => {
-    const permissionRequesters = [];
-    const sensorPermission = await checkSensorPermissionState();
-    if (sensorPermission === 'denied') return 'denied';
+export async function requestMotionPermission() {
+  const permissionRequesters = [];
+  const motionPermissionSupported =
+    typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function';
+  const orientationPermissionSupported =
+    typeof DeviceOrientationEvent !== 'undefined' &&
+    typeof DeviceOrientationEvent.requestPermission === 'function';
 
-    if (
-      typeof DeviceMotionEvent !== 'undefined' &&
-      typeof DeviceMotionEvent.requestPermission === 'function'
-    ) {
-      permissionRequesters.push(() => DeviceMotionEvent.requestPermission());
-    }
+  if (motionPermissionSupported) {
+    permissionRequesters.push(() => DeviceMotionEvent.requestPermission());
+  }
 
-    if (
-      typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function'
-    ) {
-      permissionRequesters.push(() => DeviceOrientationEvent.requestPermission());
-    }
+  if (orientationPermissionSupported) {
+    permissionRequesters.push(() => DeviceOrientationEvent.requestPermission());
+  }
 
-    if (permissionRequesters.length === 0) {
-      return 'granted';
-    }
+  if (permissionRequesters.length > 0) {
+    console.info('Requesting device motion/orientation permission');
 
     for (const requester of permissionRequesters) {
       try {
@@ -72,8 +69,16 @@ export function requestMotionPermission() {
       }
     }
 
+    const sensorPermission = await checkSensorPermissionState();
+    if (sensorPermission === 'denied') return 'denied';
+
     return 'default';
-  })();
+  }
+
+  const sensorPermission = await checkSensorPermissionState();
+  if (sensorPermission === 'denied') return 'denied';
+
+  return 'granted';
 }
 
 async function checkSensorPermissionState() {
