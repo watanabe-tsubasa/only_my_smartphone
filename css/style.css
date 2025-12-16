@@ -42,6 +42,56 @@ video {
   z-index: 3;
 }
 
+.permission-gate {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.75));
+  z-index: 5;
+}
+
+.permission-gate[hidden] {
+  display: none;
+}
+
+.permission-card {
+  width: min(90vw, 420px);
+  padding: 18px 20px;
+  background: rgba(12, 12, 16, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+  color: #fff;
+  display: grid;
+  gap: 12px;
+  text-align: center;
+}
+
+.permission-card p {
+  margin: 0;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.permission-card button {
+  justify-self: center;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1e88e5, #42a5f5);
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.permission-card button:active {
+  transform: translateY(1px);
+}
+
 .motion-overlay {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 12px);

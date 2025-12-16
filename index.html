@@ -26,6 +26,12 @@
     </div>
   </div>
   <audio id="slash-audio" preload="auto" src="assets/slash.mp3"></audio>
+  <div id="motion-permission-gate" class="permission-gate" hidden>
+    <div class="permission-card">
+      <p id="motion-permission-message">センサー利用を許可すると、加速度を検知できます。</p>
+      <button id="request-motion-permission" type="button">センサーアクセスを許可</button>
+    </div>
+  </div>
   <div class="hud">
     <p id="status" aria-live="polite">初期化中...</p>
     <p id="https-notice" class="hud-notice" aria-live="polite" hidden>このアプリは HTTPS 環境でのみ動作します。カメラやセンサーを利用する際は HTTPS でアクセスしてください。</p>
