@@ -18,6 +18,9 @@ const thresholdDisplay = document.getElementById('threshold-display');
 const magnitudeDisplay = document.getElementById('magnitude-display');
 const permissionDisplay = document.getElementById('permission-display');
 const motionStateDisplay = document.getElementById('motion-state-display');
+const motionPermissionGate = document.getElementById('motion-permission-gate');
+const motionPermissionMessage = document.getElementById('motion-permission-message');
+const motionPermissionButton = document.getElementById('request-motion-permission');
 const deltaXDisplay = document.getElementById('delta-x');
 const deltaYDisplay = document.getElementById('delta-y');
 const deltaZDisplay = document.getElementById('delta-z');
@@ -33,6 +36,7 @@ let audioInitialized = false;
 let audioEnabled = true;
 let lastMotionDelta = null;
 let motionState = '未確認';
+let motionPermissionState = 'default';
 
 function updateStatus(message) {
   if (statusText) {
@@ -51,6 +55,17 @@ function hideMotionHint() {
   motionPermissionHint.hidden = true;
 }
 
+function showMotionPermissionGate(message) {
+  if (!motionPermissionGate) return;
+  if (motionPermissionMessage && message) motionPermissionMessage.textContent = message;
+  motionPermissionGate.hidden = false;
+}
+
+function hideMotionPermissionGate() {
+  if (!motionPermissionGate) return;
+  motionPermissionGate.hidden = true;
+}
+
 function showPermissionGuidance(permissionState = 'default') {
   if (permissionState === 'denied') {
     showMotionHint(
@@ -60,7 +75,7 @@ function showPermissionGuidance(permissionState = 'default') {
   }
 
   showMotionHint(
-    'この機能にはモーション／加速度センサーの許可が必要です。画面をタップするなど操作してから表示される許可ダイアログを承認してください。ダイアログが出ない場合は、設定アプリやブラウザのサイト設定で「モーションと画面の向き」「モーションセンサー」を有効にしてから再度「加速度検知を開始」を押してください。'
+    'この機能にはモーション／加速度センサーの許可が必要です。「センサーアクセスを許可」をタップして表示される許可ダイアログを承認してください。ダイアログが出ない場合は、設定アプリやブラウザのサイト設定で「モーションと画面の向き」「モーションセンサー」を有効にしてから再度「センサーアクセスを許可」を押してください。'
   );
 }
 
@@ -102,6 +117,20 @@ function syncMagnitudeDisplay(value) {
 function updatePermissionDisplay(state) {
   if (!permissionDisplay) return;
   permissionDisplay.textContent = state;
+}
+
+function setMotionPermissionState(state) {
+  motionPermissionState = state;
+  if (state === 'granted') {
+    updatePermissionDisplay('許可済み');
+    updateMotionState('許可済み');
+  } else if (state === 'denied') {
+    updatePermissionDisplay('未許可/拒否');
+    updateMotionState('拒否');
+  } else {
+    updatePermissionDisplay('未確認/要操作');
+    updateMotionState('未確認');
+  }
 }
 
 function updateMotionState(state) {
@@ -177,6 +206,27 @@ async function initializeAudio() {
   }
 }
 
+async function requestMotionPermissionWithUi(trigger = 'button') {
+  const permission = await requestMotionPermission();
+
+  if (permission === 'granted') {
+    setMotionPermissionState('granted');
+    hideMotionHint();
+    hideMotionPermissionGate();
+    if (trigger === 'button') {
+      updateStatus('センサーが許可されました。加速度検知を開始できます。');
+    }
+  } else if (permission === 'denied') {
+    setMotionPermissionState('denied');
+    showMotionHint('ブラウザの許可ダイアログで「許可」を選択するか、設定で「モーションと方向」/「加速度センサー」を有効にしてください。');
+    showMotionPermissionGate('センサーアクセスが拒否されました。設定で許可した後、もう一度「センサーアクセスを許可」をタップしてください。');
+  } else {
+    setMotionPermissionState('default');
+  }
+
+  return permission;
+}
+
 function playSlashSound(magnitude = 0) {
   if (!audioInitialized || !audioEnabled || !slashAudio) return;
 
@@ -227,21 +277,14 @@ async function handleMotionToggle() {
   }
 
   await initializeAudio();
-  const permission = await requestMotionPermission();
+  const permission = motionPermissionState === 'granted' ? 'granted' : await requestMotionPermissionWithUi('toggle');
   if (permission === 'granted') {
-    updatePermissionDisplay('許可済み');
-    updateMotionState('許可済み');
     hideMotionHint();
-  } else if (permission === 'denied') {
-    updatePermissionDisplay('未許可/拒否');
-    updateMotionState('拒否');
-  } else {
-    updatePermissionDisplay('未許可/拒否');
-    updateMotionState('未確認');
   }
   if (permission !== 'granted') {
     updateStatus('加速度センサーの許可が必要です。');
     showPermissionGuidance(permission);
+    showMotionPermissionGate('「センサーアクセスを許可」をタップし、表示される許可ダイアログでセンサー利用を許可してください。');
     return;
   }
 
@@ -324,9 +367,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     updatePermissionDisplay('非対応');
     updateMotionState('非対応');
   } else if (support.permissionRequired) {
-    updatePermissionDisplay('未確認/要操作');
+    setMotionPermissionState('default');
     updateMotionState('未確認');
+    showMotionPermissionGate('「センサーアクセスを許可」をタップして、ブラウザの確認ダイアログでセンサー利用を許可してください。');
   } else {
+    motionPermissionState = 'granted';
     updatePermissionDisplay('不要/自動許可');
     updateMotionState('停止中');
   }
@@ -348,6 +393,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   toggleButton?.addEventListener('click', handleMotionToggle);
+  motionPermissionButton?.addEventListener('click', async () => {
+    updateStatus('センサーアクセスの許可を確認しています...');
+    await requestMotionPermissionWithUi('button');
+  });
   window.addEventListener(slashEventName, handleSlash);
 
   document.addEventListener('visibilitychange', () => {
