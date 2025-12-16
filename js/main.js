@@ -221,7 +221,7 @@ async function requestMotionPermissionWithUi(trigger = 'button') {
     hideMotionHint();
     hideMotionPermissionGate();
     if (trigger === 'button') {
-      updateStatus('センサーが許可されました。加速度検知を開始できます。');
+      updateStatus('センサーが許可されました。続けて加速度検知を開始を押してください。');
     }
   } else if (permission === 'denied') {
     setMotionPermissionState('denied');
