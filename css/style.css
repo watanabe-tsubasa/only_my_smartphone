@@ -19,6 +19,8 @@ html, body {
 
 body {
   position: relative;
+  background: radial-gradient(120% 120% at 50% 20%, rgba(30, 136, 229, 0.28), rgba(0, 0, 0, 0.9) 55%);
+  color: #f7fbff;
 }
 
 video {
@@ -30,6 +32,7 @@ video {
   object-fit: cover;
   background-color: #000;
   z-index: 1;
+  filter: brightness(0.95);
 }
 
 #slash-canvas {
@@ -48,7 +51,7 @@ video {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.75));
+  background: radial-gradient(120% 120% at 50% 20%, rgba(30, 136, 229, 0.22), rgba(0, 0, 0, 0.7));
   z-index: 5;
 }
 
@@ -59,8 +62,8 @@ video {
 .permission-card {
   width: min(90vw, 420px);
   padding: 18px 20px;
-  background: rgba(12, 12, 16, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(18, 22, 32, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 14px;
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
   color: #fff;
@@ -101,11 +104,11 @@ video {
   display: grid;
   gap: 8px;
   padding: 12px 14px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85));
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 18, 26, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 14px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
-  color: #f3f6ff;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+  color: #f8fbff;
   z-index: 4;
   pointer-events: none;
   backdrop-filter: blur(10px);
@@ -121,13 +124,13 @@ video {
 
 .motion-label {
   letter-spacing: 0.02em;
-  font-weight: 700;
-  color: #a8c7ff;
+  font-weight: 800;
+  color: #c7ddff;
 }
 
 .motion-value {
   font-variant-numeric: tabular-nums;
-  font-weight: 800;
+  font-weight: 900;
   color: #fff;
   min-width: 68px;
   text-align: right;
@@ -143,7 +146,9 @@ video {
   gap: 12px;
   align-items: center;
   padding: 16px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 40%, rgba(0, 0, 0, 0.9) 100%);
+  background: linear-gradient(180deg, rgba(10, 14, 24, 0) 0%, rgba(10, 14, 24, 0.82) 40%, rgba(10, 14, 24, 0.96) 100%);
+  color: #f7fbff;
+  z-index: 4;
 }
 
 #status {
@@ -157,15 +162,15 @@ video {
   grid-column: 1 / -1;
   margin: 0;
   font-size: 13px;
-  color: #cde2ff;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5efff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 10px;
   padding: 8px 10px;
 }
 
 .hud-hint {
-  color: #ffd5a5;
+  color: #ffd8a8;
 }
 
 .threshold-control {
@@ -174,8 +179,8 @@ video {
   gap: 6px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .threshold-labels {
@@ -184,7 +189,7 @@ video {
   justify-content: space-between;
   gap: 8px;
   font-size: 13px;
-  color: #e0e0e0;
+  color: #f0f4ff;
 }
 
 .threshold-title {
@@ -212,7 +217,7 @@ video {
   padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.05);
   color: #fff;
 }
 
@@ -229,10 +234,10 @@ video {
   align-items: center;
   padding: 8px 10px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   font-size: 13px;
-  color: #f0f4ff;
+  color: #f5f8ff;
 }
 
 .debug-label {
@@ -249,7 +254,7 @@ video {
   padding: 10px 16px;
   border: none;
   border-radius: 12px;
-  background: #1e88e5;
+  background: linear-gradient(90deg, #1e88e5, #42a5f5);
   color: #fff;
   font-weight: 700;
   font-size: 14px;
